@@ -1,6 +1,15 @@
 package jsoup;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
@@ -9,8 +18,11 @@ import org.jsoup.select.Elements;
 import org.junit.Test;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JsoupFirstTest {
 
@@ -177,6 +189,7 @@ public class JsoupFirstTest {
         elements = doc.select(".city_con > ul > *");
 
 
+
         System.out.println("获取到的内容是："+element.text());
 
         for (Element element1 : elements) {
@@ -184,5 +197,99 @@ public class JsoupFirstTest {
         }
     }
 
+    @Test
+    public void testHttp() throws Exception {
+        String realFileName = "18009";
+//        for(int i=0;i<=23;i++){
+//           String year= StringUtils.leftPad(String.valueOf(i),2,"0");
+////            System.out.println(year);
+//            for(int j=0;j<=200;j++) {
+//                String times = StringUtils.leftPad(String.valueOf(j), 3, "0");
+////                System.out.println(times);
+//                realFileName=year+times;
+//                this.getInfo(realFileName);
+//            }
+//        }
+        this.getInfo(realFileName);
+    }
+    public void getInfo(String realFileName) throws Exception {
+
+        String baseUrl = "http://kaijiang.500.com/shtml/ssq/";
+        String url = baseUrl+realFileName +".shtml";
+        //创建HttpClient对象
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        //创建URIBuilder
+        URIBuilder uriBuilder = new URIBuilder(url);
+        //设置参数
+//        uriBuilder.setParameter("keys", "Java");
+        URI uri = uriBuilder.build();
+        //创建HttpGet对象
+        HttpGet httpGet = new HttpGet(uri);
+        //执行请求
+        CloseableHttpResponse response = httpClient.execute(httpGet);
+        //获取响应状态码
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode == HttpStatus.SC_OK) {
+            //获取响应内容
+            HttpEntity entity = response.getEntity();
+            String content = EntityUtils.toString(entity, "gb2312");
+//            System.out.println(content);
+            Document document = Jsoup.parse(content);
+            Elements elements = document.select(".ball_box01 > ul > li.ball_red");
+            Elements elements2 = document.select(".ball_box01 > ul > li.ball_blue");
+            Elements elements3 = document.select(".td_title01 > span.span_right");
+
+            System.out.print(realFileName+":");
+            for (Element element : elements) {
+                System.out.print(element.text()+" ");
+            }
+            for (Element element : elements2) {
+                System.out.println("--blue:"+element.text());
+            }
+            for (Element element : elements3) {
+                String text = element.text();
+                text=text.substring(text.indexOf("：")+1,text.indexOf("兑")-1);
+                String[] arr = text.split("年|月|日");
+                System.out.println(text);
+                if(arr.length==1){
+                    //正则表达式匹配年
+                    Pattern pattern = Pattern.compile("\\d{4}");
+                    Matcher matcher = pattern.matcher(text);
+                    if(matcher.find()){
+                        arr[0]=matcher.group();
+                        System.out.println("--year:"+matcher.group());
+                    }
+                    text = matcher.replaceFirst("");
+                    System.out.println("--date:"+text);
+                    //正则表达式匹配月
+                    pattern = Pattern.compile("\\d{1,2}");
+                    matcher = pattern.matcher(text);
+
+                    if(matcher.find()){
+                        arr[1]=matcher.group();
+                        System.out.println("--month:"+matcher.group());
+                    }
+                    text = matcher.replaceFirst("");
+                    System.out.println("--date:"+text);
+                    //正则表达式匹配日
+                    pattern = Pattern.compile("\\d{1,2}");
+                    matcher = pattern.matcher(text);
+                    if(matcher.find()){
+                        arr[2]=matcher.group();
+                        System.out.println("--date:"+matcher.group());
+                    }
+                }
+                arr[1]=StringUtils.leftPad(arr[1],2,"0");
+                arr[2]=StringUtils.leftPad(arr[2],2,"0");
+                System.out.println("--date:"+arr[0]+"-"+arr[1]+"-"+arr[2]);
+                System.out.println("span:" + text);
+
+            }
+
+        }
+        //关闭HttpClient
+        httpClient.close();
+
+    }
 
 }
