@@ -42,6 +42,17 @@
 
 	<!-- 查询符合条件的记录,包含分页查询、条件查询 -->
 	<select id="findList"  parameterType="pageData" resultType="pageData">
+		select
+		    a.id as "id",
+			a.times as "times",
+			a.show_time as "showTime",
+            a.red1 as "red1",
+            a.red2 as "red2",
+            a.red3 as "red3",
+            a.red4 as "red4",
+            a.red5 as "red5",
+            a.blue as "blue"
+		from  twocolor_ball_info as a
 
 
 	</select>
