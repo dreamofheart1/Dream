@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gttss.testservice.dao.test.TestDao">
+
+	<!-- 查询符合条件的记录数,包含分页查询、条件查询 -->
+	<select id="findCount"  parameterType="pageData" resultType="Integer">
+		select
+			count(a.id)
+		from jz_firstbook as a
+		where 1=1
+		<if test="issync != null and issync !=''">
+			and a.issync=#{issync}
+		</if>
+		<if test="hasProblem != null and hasProblem !=''">
+			and a.has_problem=#{hasProblem}
+		</if>
+		<if test="libuuid != null and shelfuuid == null">
+			AND a.layeruuid IN (
+			SELECT
+			l.uuid
+			FROM
+			jz_layer AS l
+			WHERE
+			l.shelfuuid in (
+			SELECT shl.uuid from jz_shelf as shl where shl.libuuid= #{libuuid}
+			)
+
+			)
+		</if>
+
+		<if test="shelfuuid != null ">
+			AND a.layeruuid IN (
+			SELECT
+			l.uuid
+			FROM
+			jz_layer AS l
+			WHERE
+			l.shelfuuid = #{shelfuuid}
+			)
+		</if>
+	</select>
+
+	<!-- 查询符合条件的记录,包含分页查询、条件查询 -->
+	<select id="findList"  parameterType="pageData" resultType="pageData">
+
+
+	</select>
+
+	<!-- 查询符合条件的记录,包含分页查询、条件查询 -->
+	<select id="findListByShelfuuid"  parameterType="pageData" resultType="pageData">
+		select
+		a.uuid as "uuid",
+		a.layeruuid as "layeruuid",
+		a.barcode as "barcode",
+-- 		a.issync as "issync",
+		bi.pseudocode as "pseudocode",
+		lay.location as "location"
+
+		from
+		jz_firstbook as a
+		LEFT JOIN jz_layer as lay  ON a.layeruuid = lay.uuid
+		LEFT JOIN jz_bookinfo AS bi ON a.barcode = bi.barcode
+		where 1=1
+-- 		AND a.barcode != ''
+		<if test="libuuid != null and shelfuuid == null">
+		AND a.layeruuid IN (
+			SELECT
+			l.uuid
+			FROM
+			jz_layer AS l
+			WHERE
+			l.shelfuuid in (
+			SELECT shl.uuid from jz_shelf as shl where shl.libuuid= #{libuuid}
+			)
+
+			)
+		</if>
+
+		<if test="shelfuuid != null ">
+		AND a.layeruuid IN (
+			SELECT
+				l.uuid
+			FROM
+				jz_layer AS l
+			WHERE
+				l.shelfuuid = #{shelfuuid}
+		)
+		</if>
+		ORDER BY
+			lay.location asc
+
+
+
+	</select>
+
+	<!-- 查询符合条件的记录,包含分页查询、条件查询 -->
+	<select id="findAllForRedis"  parameterType="pageData" resultType="pageData">
+		select
+		a.uuid as "uuid",
+		a.layeruuid as "layeruuid",
+		a.barcode as "barcode",
+		-- 		a.issync as "issync",
+		bi.pseudocode as "pseudocode",
+		lay.location as "location"
+
+		from
+		jz_firstbook as a
+		LEFT JOIN jz_layer as lay  ON a.layeruuid = lay.uuid
+		LEFT JOIN jz_bookinfo AS bi ON a.barcode = bi.barcode
+
+		ORDER BY
+		lay.location asc
+
+
+
+	</select>
+
+	<!-- 新增-->
+	<insert id="add" parameterType="pageData">
+		insert into jz_firstbook
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+			uuid,
+			layeruuid,
+			barcode,
+			issync,
+			state,
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			#{uuid},
+			#{layeruuid},
+			#{barcode},
+			#{issync},
+			#{state},
+		</trim>
+	</insert>
+
+	<!-- 通过ID获取数据 -->
+	<select id="findByUuid" parameterType="pageData" resultType="pageData">
+		select
+			a.id as "id",
+			a.uuid as "uuid",
+			a.layeruuid as "layeruuid",
+			a.barcode as "barcode",
+			a.issync as "issync",
+			a.has_problem as "hasProblem",
+			DATE_FORMAT(a.createtime,'%Y%m%d%H%i%s') as "createtime",
+			DATE_FORMAT(a.realtime,'%Y%m%d%H%i%s') as "realtime"
+		from
+			jz_firstbook as a
+		where
+			a.uuid = #{uuid}
+	</select>
+
+	<!-- 修改 -->
+	<update id="edit" parameterType="pageData">
+		update  jz_firstbook
+		<set >
+			<if test="layeruuid != null">
+				layeruuid = #{layeruuid},
+			</if>
+			<if test="barcode != null">
+				barcode = #{barcode},
+			</if>
+			<if test="issync != null">
+				issync = #{issync},
+			</if>
+			<if test="hasProblem != null">
+				has_problem = #{hasProblem},
+			</if>
+
+		</set>
+		where
+		uuid = #{uuid}
+	</update>
+
+	<!-- 修改 -->
+	<update id="editByLayeruuid" parameterType="pageData">
+		update  jz_firstbook
+		<set >
+			<if test="layeruuid != null">
+				layeruuid = #{layeruuid},
+			</if>
+			<if test="barcode != null">
+				barcode = #{barcode},
+			</if>
+			<if test="issync != null">
+				issync = #{issync},
+			</if>
+			<if test="hasProblem != null">
+				has_problem = #{hasProblem},
+			</if>
+
+		</set>
+		where
+		layeruuid in
+		<foreach item="item" index="index" collection="lUuids" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+
+	<!-- 删除-->
+	<delete id="delete" parameterType="pageData">
+		update  jz_firstbook
+		set
+			barcode = ''
+		where
+			uuid = #{uuid}
+	</delete>
+
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		update  jz_firstbook
+		set
+		state = 1
+		where
+		uuid in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<!-- 查询全部数据（状态正常的所有数据，但不包括删除数据） -->
+	<select id="dataListPage" parameterType="pageData" resultType="pageData">
+		select
+			a.id as "id" ,
+			a.uuid as "uuid" ,
+			a.layeruuid as "layeruuid" ,
+			a.barcode as "barcode" ,
+			a.issync as "issync" ,
+			DATE_FORMAT(a.createtime,'%Y%m%d%H%i%s') as "createtime",
+			DATE_FORMAT(a.realtime,'%Y%m%d%H%i%s') as "realtime"
+
+		from
+			jz_firstbook as a
+		where 1=1
+	</select>
+
+	<!-- 查询全部数据（所有记录，包括已经删除的记录） -->
+	<select id="listAll" parameterType="pageData" resultType="pageData">
+		select
+			a.id as "id" ,
+			a.uuid as "uuid" ,
+			a.layeruuid as "layeruuid" ,
+			a.barcode as "barcode" ,
+			a.issync as "issync" ,
+			DATE_FORMAT(a.createtime,'%Y%m%d%H%i%s') as "createtime",
+			DATE_FORMAT(a.realtime,'%Y%m%d%H%i%s') as "realtime"
+
+		from
+			jz_firstbook a
+	</select>
+</mapper>
