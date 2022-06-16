@@ -60,6 +60,7 @@ public class BpDeep implements Serializable{
                     layer[l-1][i]=l==1?in[i]:layer[l-1][i];
                     z+=layer_weight[l-1][i][j]*layer[l-1][i];
                 }
+                System.out.println(z);
                 layer[l][j]=1/(1+Math.exp(-z));
             }
         }
@@ -118,6 +119,15 @@ public class BpDeep implements Serializable{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+    }
+
+    public void display(){
+        for(int l=0;l<layer.length;l++){
+            for(int i=0;i<layer[l].length;i++){
+                System.out.print(layer[l][i]+" ");
+            }
+            System.out.println();
+        }
     }
     
     public static void main(String[] args){

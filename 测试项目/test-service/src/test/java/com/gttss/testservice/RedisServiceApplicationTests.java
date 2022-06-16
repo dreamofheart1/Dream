@@ -91,6 +91,7 @@ class RedisServiceApplicationTests {
         }
         for(int i=0;i<list.size();i++) {
             bpDeep.train(data[i], taget[i]);
+            bpDeep.display();
         }
         bpDeep.save(path);
     }
@@ -101,8 +102,16 @@ class RedisServiceApplicationTests {
         BpDeep bpDeep = new BpDeep(path);
         double data[]=new double[]{2022,6,13};
         double[] result = bpDeep.computeOut(data);
+        bpDeep.display();
         System.out.println(result[0]+"-"+result[1]+"-"+result[2]+"-"+result[3]+"-"+result[4]+"-"+result[5]);
 
+    }
+
+    @Test
+    void display() throws IOException, ClassNotFoundException {
+        String path="D:/test/ai.mod";
+        BpDeep bpDeep = new BpDeep(path);
+        bpDeep.display();
     }
 
 }
