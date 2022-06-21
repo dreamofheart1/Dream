@@ -48,7 +48,7 @@ public class BpDeep implements Serializable{
 			this.layer_weight=bpdeep.layer_weight;
 			this.layer_weight_delta=bpdeep.layer_weight_delta;
 			this.mobp=bpdeep.mobp;
-			this.rate=bpdeep.rate;	
+			this.rate=bpdeep.rate;
     }    
     
     //逐层向前计算输出
@@ -60,18 +60,23 @@ public class BpDeep implements Serializable{
                     layer[l-1][i]=l==1?in[i]:layer[l-1][i];
                     z+=layer_weight[l-1][i][j]*layer[l-1][i];
                 }
-                System.out.println(z);
+//                if(l==layer.length-1)
+//                    layer[l][j]=Math.round(z);
+//                else
+//                    layer[l][j]=1/(1+Math.exp(-z));
                 layer[l][j]=1/(1+Math.exp(-z));
+//                layer[l][j]=(double)Math.round(z*100)/100;
             }
         }
         return layer[layer.length-1];
     }
     //逐层反向计算误差并修改权重
     public void updateWeight(double[] tar){
+        // 计算最后一层误差
         int l=layer.length-1;
         for(int j=0;j<layerErr[l].length;j++)
             layerErr[l][j]=layer[l][j]*(1-layer[l][j])*(tar[j]-layer[l][j]);
-
+        // 计算前面的误差
         while(l-->0){
             for(int j=0;j<layerErr[l].length;j++){
                 double z = 0.0;
@@ -122,11 +127,9 @@ public class BpDeep implements Serializable{
     }
 
     public void display(){
-        for(int l=0;l<layer.length;l++){
-            for(int i=0;i<layer[l].length;i++){
-                System.out.print(layer[l][i]+" ");
-            }
-            System.out.println();
+        int l=layer.length-1;
+        for(int i=0;i<layer[l].length;i++){
+            System.out.print(layer[l][i]+" ");
         }
     }
     
@@ -134,13 +137,14 @@ public class BpDeep implements Serializable{
         //初始化神经网络的基本配置
         //第一个参数是一个整型数组，表示神经网络的层数和每层节点数，比如{3,10,10,10,10,2}表示输入层是3个节点，输出层是2个节点，中间有4层隐含层，每层10个节点
         //第二个参数是学习步长，第三个参数是动量系数
-        BpDeep bp = new BpDeep(new int[]{2,10,2}, 0.15, 0.8);
+        BpDeep bp = new BpDeep(new int[]{2,10,1}, 0.15, 0.8);
         //BpDeep bp = new BpDeep("d:\\1.txt");
 
         //设置样本数据，对应上面的4个二维坐标数据
         double[][] data = new double[][]{{1,2},{2,2},{1,1},{2,1}};
         //设置目标数据，对应4个坐标数据的分类
-        double[][] target = new double[][]{{1,0},{0,1},{0,1},{1,0}};
+//        double[][] target = new double[][]{{1,0},{0,1},{0,1},{1,0}};
+        double[][] target = new double[][]{{1},{0},{0},{1}};
 
         //迭代训练5000次
         for(int n=0;n<5000;n++)

@@ -4,6 +4,7 @@ import com.gttss.entity.PageData;
 import com.gttss.testservice.dao.test.TestDao;
 import com.gttss.testservice.util.BpDeep;
 import com.gttss.util.RedisUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.BoundValueOperations;
@@ -65,7 +66,7 @@ class RedisServiceApplicationTests {
             bpDeep = new BpDeep(path);
         } catch (FileNotFoundException e) {
             //e.printStackTrace();
-            bpDeep=new BpDeep(new int[]{3,9,9,81,81,81,9,9,6}, 0.15, 0.8);
+            bpDeep=new BpDeep(new int[]{3,9,9,81,81,81,81,81,49}, 0.15, 0.8);
             System.out.println("exception");
         }
 
@@ -73,6 +74,7 @@ class RedisServiceApplicationTests {
 
         double [][] data= new double[list.size()][3];
         double [][] taget= new double[list.size()][6];
+        double [][] taget_49= new double[list.size()][49];
         String showTime="";
         int idx=0;
         for(PageData pd:list) {
@@ -89,21 +91,41 @@ class RedisServiceApplicationTests {
             taget[idx][5]=Integer.parseInt(pd.getString("blue"));
             idx++;
         }
+        for(int i=0;i<taget.length ;i++) {
+            for (int j = 0; j < taget[i].length; j++) {
+                if(j==taget[i].length-1) {
+                    taget_49[i][(int) taget[i][j]+16]=1;
+                }else {
+                    taget_49[i][(int) taget[i][j]]=1;
+                }
+            }
+        }
         for(int i=0;i<list.size();i++) {
-            bpDeep.train(data[i], taget[i]);
-            bpDeep.display();
+            for(int n=0;n<100;n++) {
+                bpDeep.train(data[i], taget_49[i]);
+            }
+
+//            bpDeep.display();
         }
         bpDeep.save(path);
     }
 
     @Test
     void testGetResult() throws IOException, ClassNotFoundException {
+        String [] info=new String[]{"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"};
+
         String path="D:/test/ai.mod";
         BpDeep bpDeep = new BpDeep(path);
         double data[]=new double[]{2022,6,13};
         double[] result = bpDeep.computeOut(data);
+        for (int i = 0; i < info.length; i++) {
+            String s = StringUtils.rightPad(info[i], 4, " ");
+            System.out.print(s);
+        }
+        System.out.println();
         bpDeep.display();
-        System.out.println(result[0]+"-"+result[1]+"-"+result[2]+"-"+result[3]+"-"+result[4]+"-"+result[5]);
+        System.out.println();
+
 
     }
 
@@ -113,5 +135,74 @@ class RedisServiceApplicationTests {
         BpDeep bpDeep = new BpDeep(path);
         bpDeep.display();
     }
+
+    public static void main(String[] args) {
+        double d=5.5555;
+        d= (double)Math.round(d*100)/100;
+        System.out.println(d);
+    }
+
+    double round(double d) {
+        return (double)Math.round(d*100)/100;
+    }
+
+    //年月日转换为天干地支
+@Test
+    void test() {
+    String s = "2022-06-13";
+    String[] arr = s.split("-");
+    String year = arr[0];
+    String month = arr[1];
+    String day = arr[2];
+    String year_gan = getGanZhi(year);
+    String month_gan = getGanZhi(month);
+    String day_gan = getGanZhi(day);
+    System.out.println(year_gan + "年" + month_gan + "月" + day_gan + "日");
+
+}
+getGanZhi (String str) {
+    int year = Integer.parseInt(str);
+    int gan = year % 10;
+    int zhi = year % 12;
+    String gan_zhi = "";
+    switch (gan) {
+        case 0:
+            gan_zhi = "甲子";
+            break;
+        case 1:
+            gan_zhi = "乙丑";
+            break;
+        case 2:
+            gan_zhi = "丙寅";
+            break;
+        case 3:
+            gan_zhi = "丁卯";
+            break;
+        case 4:
+            gan_zhi = "戊辰";
+            break;
+        case 5:
+            gan_zhi = "己巳";
+            break;
+        case 6:
+            gan_zhi = "庚午";
+            break;
+        case 7:
+            gan_zhi = "辛未";
+            break;
+        case 8:
+            gan_zhi = "壬申";
+            break;
+        case 9:
+            gan_zhi = "癸酉";
+            break;
+        case 10:
+            gan_zhi = "甲戌";
+            break;
+        case 11:
+            gan_zhi = "乙亥";
+            break;
+
+
 
 }
