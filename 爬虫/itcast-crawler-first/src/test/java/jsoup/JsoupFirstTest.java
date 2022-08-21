@@ -292,30 +292,33 @@ public class JsoupFirstTest {
 
     }
 
-    public void increaseClickNum(String realFileName) throws Exception {
+    @Test
+    public void increaseClickNum() throws Exception {
 
-        String baseUrl = "http://kaijiang.500.com/shtml/ssq/";
-        String url = baseUrl+realFileName +".shtml";
-        //创建HttpClient对象
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        //创建URIBuilder
-        URIBuilder uriBuilder = new URIBuilder(url);
-        //设置参数
+        while (true) {
+            Thread.sleep(60000);
+            System.out.println("开始");
+            String url = "https://blog.csdn.net/dreamofheart1/article/details/126282656?spm=1001.2014.3001.5501";
+            //创建HttpClient对象
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+            //创建URIBuilder
+            URIBuilder uriBuilder = new URIBuilder(url);
+            //设置参数
 //        uriBuilder.setParameter("keys", "Java");
-        URI uri = uriBuilder.build();
-        //创建HttpGet对象
-        HttpGet httpGet = new HttpGet(uri);
-        //执行请求
-        CloseableHttpResponse response = httpClient.execute(httpGet);
-        //获取响应状态码
-        int statusCode = response.getStatusLine().getStatusCode();
-        if (statusCode == HttpStatus.SC_OK) {
+            URI uri = uriBuilder.build();
+            //创建HttpGet对象
+            HttpGet httpGet = new HttpGet(uri);
+            //执行请求
+            CloseableHttpResponse response = httpClient.execute(httpGet);
+            //获取响应状态码
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode == HttpStatus.SC_OK) {
 
-            System.out.println("增加点击量成功");
+                System.out.println("增加点击量成功");
+            }
+            //关闭HttpClient
+            httpClient.close();
         }
-        //关闭HttpClient
-        httpClient.close();
-
     }
 
 }
